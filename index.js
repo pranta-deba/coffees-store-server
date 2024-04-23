@@ -28,7 +28,9 @@ async function run() {
   try {
     await client.connect();
     const coffeeCollection = client.db("coffeeDB").collection("coffees");
+    const userCollection = client.db("coffeeDB").collection("users");
 
+    /*--------------------- products related api start --------------------------*/
     // create
     app.post("/coffee", async (req, res) => {
       const newCoffee = req.body;
@@ -42,7 +44,7 @@ async function run() {
       res.send(allCoffees);
     });
 
-    // delete 
+    // delete
     app.delete("/coffee/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
@@ -58,15 +60,55 @@ async function run() {
       res.send(result);
     });
 
-    // update 
+    // update
     app.put("/coffee/:id", async (req, res) => {
       const { id } = req.params;
       const updatedCoffee = req.body;
-      const options = {upsert: true};
+      const options = { upsert: true };
       const query = { _id: new ObjectId(id) };
-      const result = await coffeeCollection.updateOne(query, { $set: updatedCoffee },options);
+      const result = await coffeeCollection.updateOne(
+        query,
+        { $set: updatedCoffee },
+        options
+      );
       res.send(result);
     });
+    /*--------------------- products related api end --------------------------*/
+
+    /*--------------------- user related api start--------------------------*/
+    // create new user
+    app.post("/user", async (req, res) => {
+      const newUser = req.body;
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    });
+
+    // read all user
+    app.get("/user", async (req, res) => {
+      const allUsers = await userCollection.find().toArray();
+      res.send(allUsers);
+    });
+
+    // sign in single user update
+    app.patch("/user", async (req, res) => {
+      const updatedUser = req.body;
+      const query = { email: updatedUser.email };
+      const result = await userCollection.updateOne(query, {
+        $set: {
+          lastSignInTime: updatedUser.lastSignInTime,
+        },
+      });
+      res.send(result);
+    });
+
+    // single user 
+    app.get("/user/:email", async (req, res) => {
+      const { email } = req.params;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+    /*--------------------- user related api end--------------------------*/
 
     await client.db("admin").command({ ping: 1 });
     console.log(
