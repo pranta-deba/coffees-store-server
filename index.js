@@ -1,20 +1,18 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
-require("dotenv").config();
 
 // mongodb
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASSWORD}@cluster0.girnwoz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // middleware
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -26,7 +24,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const coffeeCollection = client.db("coffeeDB").collection("coffees");
     const userCollection = client.db("coffeeDB").collection("users");
 
@@ -120,6 +118,10 @@ async function run() {
 }
 run().catch(console.dir);
 
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 app.listen(port, () => {
   console.log(`Coffee app listening on port ${port}`);
 });
